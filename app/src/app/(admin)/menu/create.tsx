@@ -3,14 +3,17 @@ import { defaultPizzaImage } from '@/components/ProductListItem';
 import Colors from '@/constants/Colors';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { View, Text, StyleSheet, TextInput, Image } from 'react-native'
-import { Stack } from 'expo-router';
+import { View, Text, StyleSheet, TextInput, Image, Alert } from 'react-native'
+import { Stack, useLocalSearchParams } from 'expo-router';
 
 const CreateProductScreen = () => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [errors, setErrors] = useState('');
     const [image, setImage] = useState('');
+
+    const { id } = useLocalSearchParams();
+    const isUpdating = !!id; // check if id is defined (to determine if creating or updating)
 
     const validateInput = () => {
         setErrors('');
@@ -48,6 +51,24 @@ const CreateProductScreen = () => {
       }
     };
 
+    const onSubmit = () => {
+        if (isUpdating) {
+            onUpdate();
+        } else {
+            onCreate();
+        }
+    }
+
+    const onUpdate = () => {
+        console.warn('Updating product');
+        if (!validateInput()) {
+            return;
+        }
+        // save values in db
+
+        resetFields();
+    }
+
     const onCreate = () => {
         console.warn('Creating product');
         if (!validateInput()) {
@@ -63,9 +84,26 @@ const CreateProductScreen = () => {
         setPrice('');
     }
 
+    const onDelete = () => {
+        console.warn('Deleting product');
+    }
+
+    const confirmDelete = () => {
+        Alert.alert('Confirm', 'Are you sure you want to delete this product?', [
+            {
+                text: 'Cancel',
+            },
+            {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: onDelete,
+            },
+        ]);
+    }
+
   return (
     <View style={styles.container}>
-        <Stack.Screen options={{ title: 'Create Product' }} />
+        <Stack.Screen options={{ title: isUpdating? 'Update Product': 'Create Product' }} />
         <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} /> 
         <Text onPress={pickImage} style={styles.textButton}>Select Image</Text>
 
@@ -76,7 +114,8 @@ const CreateProductScreen = () => {
         <TextInput value={price} onChangeText={setPrice} placeholder="9.99" style={styles.input} keyboardType='numeric'/>
 
         <Text style={{ color: 'red' }}>{errors}</Text>
-        <Button onPress={onCreate} text='Create' />
+        <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
+        {isUpdating && <Text style={styles.textButton} onPress={confirmDelete}>Delete</Text>}
     </View>
   )
 }
