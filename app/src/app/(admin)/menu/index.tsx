@@ -4,8 +4,8 @@ import { useProductList } from '@/api/products';
 import { ActivityIndicator } from 'react-native';
 
 export default function TabOneScreen() {
-
   const {data: products, error, isLoading} = useProductList();
+  console.log("In admin index screen")
 
   if (isLoading) {
     return <ActivityIndicator />

@@ -20,9 +20,10 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { isAdmin } = useAuth();
 
-  if (!isAdmin) {
-    return <Redirect href={'/'} />;
-  }
+  // TODO change this for when we have a user role (used this to test admin effects with user group)
+  // if (!isAdmin) {
+  //   return <Redirect href={'/'} />;
+  // }
 
   return (
     <Tabs

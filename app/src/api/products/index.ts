@@ -5,11 +5,15 @@ export const useProductList = () => {
     return useQuery({
         queryKey: ['products'],
         queryFn: async () => {
-          const {data, error} = await supabase.from('products').select('*');
+          const {data, error} = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+
           if (error) {
             throw new Error(error.message)
           }
-          console.log(data);
+          // console.log(data);
           return data;
         }
       })
@@ -22,8 +26,9 @@ export const useProduct = (id: number) => {
       const {data, error} = await supabase.from('products').select('*').eq('id', id).single()
       if (error) {
         throw new Error(error.message)
+        
       }
-      console.log(data);
+      // console.log(data);
       return data;
     }
   })
@@ -50,7 +55,7 @@ export const useInsertProduct = () => {
 
     async onSuccess() {
       // invalidate queries for refetch TODO check type
-      await queryCLient.invalidateQueries(['products']);
+      await queryCLient.invalidateQueries({queryKey: ['products']});
     },
   })
 }
@@ -79,8 +84,8 @@ export const useUpdateProduct = () => {
 
     async onSuccess(_, { id }) {
       // invalidate queries for refetch TODO check type
-      await queryCLient.invalidateQueries(['products']);
-      await queryCLient.invalidateQueries(['products', id]);
+      await queryCLient.invalidateQueries({queryKey: ['products']});
+      await queryCLient.invalidateQueries({queryKey: ['products', id]});
     },
   })
 }
@@ -101,7 +106,7 @@ export const useDeleteProduct = () => {
 
     async onSuccess() {
       // invalidate queries for refetch TODO check type
-      await queryCLient.invalidateQueries(['products']);
+      await queryCLient.invalidateQueries({queryKey: ['products']});
     },
   })
 }
