@@ -28,13 +28,13 @@ export const useMyOrderList = () => {
     const { session } = useAuth();
     const id = session?.user.id;
 
-    if (!id) {
-        return null;
-    }
-
     return useQuery({
         queryKey: ['orders', { userId: id }],
         queryFn: async () => {
+          if (!id) {
+            return null;
+          }
+          
           const {data, error} = await supabase
           .from('orders')
           .select('*')
@@ -126,8 +126,8 @@ export const useOrderDetails = (id: number) => {
   
       async onSuccess(_, { id }) {
         // invalidate queries for refetch TODO check type
-        await queryCLient.invalidateQueries({ queryKey: ['orders'] });
-        await queryCLient.invalidateQueries({ queryKey: ['orders', id]});
+        await queryCLient.invalidateQueries({queryKey: ['orders'] });
+        await queryCLient.invalidateQueries({queryKey: ['orders', id]});
       },
     })
   }

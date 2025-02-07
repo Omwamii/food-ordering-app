@@ -5,17 +5,19 @@ import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { View, Text, StyleSheet, TextInput, Image, Alert } from 'react-native'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useInsertProduct, useProduct, useUpdateProduct } from '@/api/products';
+import { useDeleteProduct, useInsertProduct, useProduct, useUpdateProduct } from '@/api/products';
 import { randomUUID } from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
+import RemoteImage from '@/components/RemoteImage';
 
 const CreateProductScreen = () => {
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
     const [errors, setErrors] = useState('');
     const [image, setImage] = useState<string | null>('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const { id: idString } = useLocalSearchParams();
     const id = parseFloat(typeof idString === 'string' ? idString : idString?.[0]);
@@ -23,7 +25,7 @@ const CreateProductScreen = () => {
 
     const { mutate: insertProduct } = useInsertProduct();
     const { mutate: updateProduct } = useUpdateProduct();
-    const { mutate: deleteProduct } = useUpdateProduct();
+    const { mutate: deleteProduct } = useDeleteProduct();
 
     const {data: updatingProduct } = useProduct(id);
 
@@ -89,15 +91,18 @@ const CreateProductScreen = () => {
 
     if (!result.canceled) {
         setImage(result.assets[0].uri);
-      }
+    }
+
     };
 
     const onSubmit = () => {
+        setIsLoading(true);
         if (isUpdating) {
             onUpdate();
         } else {
             onCreate();
         }
+        setIsLoading(false);
     }
 
     const onUpdate = async () => {
@@ -135,6 +140,7 @@ const CreateProductScreen = () => {
     const resetFields = () => {
         setName('');
         setPrice('');
+        // setImage(null);
     }
 
     const onDelete = () => {
@@ -163,7 +169,11 @@ const CreateProductScreen = () => {
   return (
     <View style={styles.container}>
         <Stack.Screen options={{ title: isUpdating? 'Update Product': 'Create Product' }} />
-        <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} /> 
+        {isUpdating ? (
+                    <RemoteImage path={image} fallback={defaultPizzaImage} style={styles.image} />
+        ) : (
+            <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} />
+        )}
         <Text onPress={pickImage} style={styles.textButton}>Select Image</Text>
 
         <Text style={styles.label}>Name</Text>
@@ -173,7 +183,8 @@ const CreateProductScreen = () => {
         <TextInput value={price} onChangeText={setPrice} placeholder="9.99" style={styles.input} keyboardType='numeric'/>
 
         <Text style={{ color: 'red' }}>{errors}</Text>
-        <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
+        {!isLoading && <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} disabled={isLoading}/>}
+        {isLoading && <Button text={isUpdating ? 'Updating...' : 'Creating...'}></Button>}
         {isUpdating && <Text style={styles.textButton} onPress={confirmDelete}>Delete</Text>}
     </View>
   )

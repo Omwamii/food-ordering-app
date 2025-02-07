@@ -24,7 +24,7 @@ const ProductDetailsScreen = () => {
     return <ActivityIndicator />
   }
 
-  if(error) {
+  if(error || !product) {
     return <Text>Failed to fetch Product</Text>
   }
 
@@ -43,23 +43,27 @@ const ProductDetailsScreen = () => {
         style={styles.image}
       />
 
-      <Text>Select size</Text>
+      <Text style={styles.selectSizeText}>Select size</Text>
       <View style={styles.sizes}>
         {sizes.map((size) => (
           <Pressable
-            onLongPress={() => {
+            onPress={() => {
               setSelectedSize(size);
             }}
             style={[
               styles.size,
-              { backgroundColor: selectedSize === size ? "gainsboro" : "" },
+              {
+                backgroundColor: selectedSize === size ? 'gainsboro' : 'white',
+              },
             ]}
             key={size}
           >
             <Text
               style={[
                 styles.sizeText,
-                { color: selectedSize === size ? "black" : "gray" },
+                {
+                  color: selectedSize === size ? 'black' : 'gray',
+                },
               ]}
             >
               {size}
@@ -88,7 +92,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 10,
     fontWeight: 'bold',
-    marginTop: 'auto',
+    marginTop: 15,
   },
   sizes: {
     flexDirection: 'row',
@@ -106,6 +110,9 @@ const styles = StyleSheet.create({
   sizeText: {
     fontSize: 20,
     fontWeight: '500'
+  },
+  selectSizeText: {
+    marginTop: 5,
   }
 })
 
